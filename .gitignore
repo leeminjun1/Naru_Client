@@ -1,0 +1,135 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# VS Code / workspace files
+.vscode/
+*.code-workspace
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Local machine / workspace metadata
+.omc/
+
+# Environment / secrets
+.env
+.env.*
+.envrc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.direnv/
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.csr
+*.der
+*.key
+*.pk8
+*.jks
+*.keystore
+*.mobileprovision
+*.provisionprofile
+AuthKey_*.p8
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+*.kdbx
+*.ovpn
+*.netrc
+*.kubeconfig
+secrets.*
+secret.*
+*.secret
+*.secrets
+credentials.json
+credential.json
+service-account*.json
+*service_account*.json
+*credentials*.json
+*secret*.json
+android/key.properties
+
+# Firebase config (contains project-specific credentials)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# Flutter platform-generated files
+ios/Flutter/ephemeral/
+ios/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+macos/Flutter/ephemeral/
+macos/Flutter/Generated.xcconfig
+macos/Flutter/flutter_export_environment.sh
+
+# CocoaPods / Xcode local state
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/xcuserdata/
+macos/Pods/
+macos/.symlinks/
+macos/Runner.xcworkspace/xcuserdata/
+**/*.xcuserstate
+**/*.xcuserdata/
+
+# Android local state
+android/.gradle/
+android/local.properties
+
+# Common local patch/temp artifacts
+*.orig
+*.rej
+*.tmp
+*.bak
+
+# Local toolchains / assistants
+.fvm/
+.claude/
+.cursor/
