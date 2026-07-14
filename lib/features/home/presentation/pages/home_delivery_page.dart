@@ -1157,12 +1157,15 @@ class _CafeRail extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cafes = stores
-        .where((store) =>
-            store.name.toLowerCase().contains('coffee') ||
-            store.name.toLowerCase().contains('cafe') ||
-            (store.categoryName ?? '').toLowerCase().contains('coffee'))
-        .toList();
+    final cafes = stores.where((store) {
+      final value = '${store.name} ${store.categoryName ?? ''}'.toLowerCase();
+      return value.contains('coffee') ||
+          value.contains('cafe') ||
+          value.contains('café') ||
+          value.contains('ediya') ||
+          value.contains('bback') ||
+          value.contains('bombom');
+    }).toList();
     if (stores.isEmpty || cafes.isEmpty) {
       return _StoreLoadState(
         isLoading: isLoading,
