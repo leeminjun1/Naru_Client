@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/widgets/app_asset_image.dart';
 import '../../../home/presentation/pages/search_page.dart' as home_search;
 import '../../domain/cart_item.dart';
 import '../providers/cart_provider.dart';
@@ -369,8 +370,12 @@ class _CartItemImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imagePath.startsWith('assets/')) {
-      return Image.asset(imagePath,
-          width: width, height: height, fit: BoxFit.cover);
+      return AppAssetImage(
+        assetPath: imagePath,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
     }
     return Image.network(
       imagePath,

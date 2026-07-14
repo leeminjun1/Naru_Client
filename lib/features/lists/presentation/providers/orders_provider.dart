@@ -142,6 +142,8 @@ class OrdersProvider extends ChangeNotifier {
             .updateOrderStatus(orderId: orderId, status: 'COMPLETED');
       } catch (e) {
         _error = e.toString();
+        notifyListeners();
+        rethrow;
       }
     }
 

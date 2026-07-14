@@ -109,7 +109,22 @@ class _DeliveryTrackingPageState extends State<DeliveryTrackingPage> {
     if (_didOpenCompletedPage) return;
     _didOpenCompletedPage = true;
     _progressTimer?.cancel();
-    await context.read<OrdersProvider>().completeOrder(widget.orderId);
+    try {
+      await context.read<OrdersProvider>().completeOrder(widget.orderId);
+    } catch (_) {
+      _didOpenCompletedPage = false;
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Could not complete the order.'),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: _openCompletedPage,
+          ),
+        ),
+      );
+      return;
+    }
     if (!mounted) return;
     Navigator.pushReplacement(
       context,

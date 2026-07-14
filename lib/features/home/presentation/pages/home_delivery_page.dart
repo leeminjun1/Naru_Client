@@ -130,6 +130,7 @@ class _HomeDeliveryPageState extends State<HomeDeliveryPage>
   StoreService? _storeService;
   List<NaruStore> _stores = const [];
   bool _isLoadingStores = false;
+  String? _storeLoadError;
 
   @override
   void initState() {
@@ -201,14 +202,23 @@ class _HomeDeliveryPageState extends State<HomeDeliveryPage>
   Future<void> _loadStores() async {
     final service = _storeService;
     if (service == null || _isLoadingStores) return;
-    setState(() => _isLoadingStores = true);
+    setState(() {
+      _isLoadingStores = true;
+      _storeLoadError = null;
+    });
     try {
       final stores = await service.fetchNearbyStores();
       if (!mounted) return;
-      setState(() => _stores = stores);
-    } catch (_) {
+      setState(() {
+        _stores = stores;
+        _storeLoadError = null;
+      });
+    } catch (error) {
       if (!mounted) return;
-      setState(() => _stores = const []);
+      setState(() {
+        _stores = const [];
+        _storeLoadError = error.toString();
+      });
     } finally {
       if (mounted) setState(() => _isLoadingStores = false);
     }
@@ -419,6 +429,8 @@ class _HomeDeliveryPageState extends State<HomeDeliveryPage>
                 child: _FreeDeliveryRail(
                   stores: _stores,
                   isLoading: _isLoadingStores,
+                  errorMessage: _storeLoadError,
+                  onRetry: _loadStores,
                 ),
               ),
               const SizedBox(height: 20),
@@ -502,6 +514,8 @@ class _HomeDeliveryPageState extends State<HomeDeliveryPage>
                 child: _CafeRail(
                   stores: _stores,
                   isLoading: _isLoadingStores,
+                  errorMessage: _storeLoadError,
+                  onRetry: _loadStores,
                 ),
               ),
               const SizedBox(height: 20),
@@ -1008,62 +1022,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _StoreRail extends StatelessWidget {
-  final List<NaruStore> stores;
-  final bool isLoading;
-
-  const _StoreRail({
-    required this.stores,
-    required this.isLoading,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final visibleStores = stores.isEmpty ? _fallbackStores : stores.take(6);
-
-    return ListView.separated(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: visibleStores.length,
-      separatorBuilder: (_, __) => const SizedBox(width: 14),
-      itemBuilder: (_, index) {
-        final store = visibleStores.elementAt(index);
-        return _StoreCard.fromStore(
-          store,
-          tags: [
-            if (isLoading) 'syncing',
-            store.categoryName ?? 'nearby',
-            'order',
-          ],
-        );
-      },
-    );
-  }
-
-  static const _fallbackStores = [
-    NaruStore(
-      id: 2,
-      name: 'Yupki Ddukbokki Sillim',
-      description: 'Spicy Korean street food',
-      imageUrl: 'assets/images/food_tteokbokki.png',
-      rating: 4.9,
-      reviewCount: 132,
-      categoryName: 'Street',
-      deliveryTime: '20min',
-    ),
-    NaruStore(
-      id: 1,
-      name: 'Simin Jokbal Bossam Sillim',
-      description: 'Korean jokbal and bossam',
-      imageUrl: 'assets/images/food_jokbal.png',
-      rating: 5.0,
-      reviewCount: 2002,
-      categoryName: 'Korean',
-      deliveryTime: '40min',
-    ),
-  ];
-}
-
 class _RecentOrderRail extends StatelessWidget {
   final List<OrderHistoryModel> orders;
   final bool isLoading;
@@ -1151,23 +1109,34 @@ class _RecentOrderRail extends StatelessWidget {
 class _FreeDeliveryRail extends StatelessWidget {
   final List<NaruStore> stores;
   final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
 
   const _FreeDeliveryRail({
     required this.stores,
     required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
   });
 
   @override
   Widget build(BuildContext context) {
-    final visibleStores = stores.isEmpty ? _StoreRail._fallbackStores : stores;
+    if (stores.isEmpty) {
+      return _StoreLoadState(
+        isLoading: isLoading,
+        errorMessage: errorMessage,
+        emptyMessage: 'No free-delivery stores found',
+        onRetry: onRetry,
+      );
+    }
 
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: visibleStores.take(6).length,
+      itemCount: stores.take(6).length,
       separatorBuilder: (_, __) => const SizedBox(width: 14),
       itemBuilder: (_, index) {
-        return _FreeDeliveryCard(store: visibleStores.elementAt(index));
+        return _FreeDeliveryCard(store: stores.elementAt(index));
       },
     );
   }
@@ -1176,10 +1145,14 @@ class _FreeDeliveryRail extends StatelessWidget {
 class _CafeRail extends StatelessWidget {
   final List<NaruStore> stores;
   final bool isLoading;
+  final String? errorMessage;
+  final VoidCallback onRetry;
 
   const _CafeRail({
     required this.stores,
     required this.isLoading,
+    required this.errorMessage,
+    required this.onRetry,
   });
 
   @override
@@ -1190,42 +1163,82 @@ class _CafeRail extends StatelessWidget {
             store.name.toLowerCase().contains('cafe') ||
             (store.categoryName ?? '').toLowerCase().contains('coffee'))
         .toList();
-    final visibleStores = cafes.isEmpty ? _fallbackCafes : cafes;
+    if (stores.isEmpty || cafes.isEmpty) {
+      return _StoreLoadState(
+        isLoading: isLoading,
+        errorMessage: errorMessage,
+        emptyMessage: 'No nearby cafes found',
+        onRetry: onRetry,
+      );
+    }
 
     return ListView.separated(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: visibleStores.take(6).length,
+      itemCount: cafes.take(6).length,
       separatorBuilder: (_, __) => const SizedBox(width: 14),
       itemBuilder: (_, index) {
-        final store = visibleStores.elementAt(index);
+        final store = cafes.elementAt(index);
         return _StoreCard.fromStore(store, tags: const ['coffee', 'pick up']);
       },
     );
   }
+}
 
-  static const _fallbackCafes = [
-    NaruStore(
-      id: 4,
-      name: 'Ediya Coffee Sillim',
-      description: 'Coffee for pick up',
-      imageUrl: 'assets/images/food_cafe.png',
-      rating: 4.7,
-      reviewCount: 421,
-      categoryName: 'Coffee',
-      deliveryTime: '16min',
-    ),
-    NaruStore(
-      id: 0,
-      name: 'Cafe Bombom Sillim',
-      description: 'Fresh coffee and sweet drinks',
-      imageUrl: 'assets/images/food_cafe.png',
-      rating: 5.0,
-      reviewCount: 0,
-      categoryName: 'Coffee',
-      deliveryTime: '15min',
-    ),
-  ];
+class _StoreLoadState extends StatelessWidget {
+  final bool isLoading;
+  final String? errorMessage;
+  final String emptyMessage;
+  final VoidCallback onRetry;
+
+  const _StoreLoadState({
+    required this.isLoading,
+    required this.errorMessage,
+    required this.emptyMessage,
+    required this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (errorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Unable to load stores',
+              style: TextStyle(
+                fontFamily: 'Pretendard',
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Center(
+      child: Text(
+        emptyMessage,
+        style: const TextStyle(
+          fontFamily: 'Pretendard',
+          fontSize: 14,
+          color: AppColors.textMuted,
+        ),
+      ),
+    );
+  }
 }
 
 class _StoreCard extends StatelessWidget {
@@ -1472,13 +1485,13 @@ class _StoreImage extends StatelessWidget {
 }
 
 class _FreeDeliveryCard extends StatelessWidget {
-  final NaruStore? store;
+  final NaruStore store;
 
-  const _FreeDeliveryCard({this.store});
+  const _FreeDeliveryCard({required this.store});
 
   @override
   Widget build(BuildContext context) {
-    final data = store ?? _StoreRail._fallbackStores.first;
+    final data = store;
 
     return GestureDetector(
       onTap: () => Navigator.push(

@@ -1,53 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/app_asset_image.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../cart/presentation/pages/cart_list_page.dart';
 import '../../../home/presentation/pages/search_page.dart' as home_search;
 import '../providers/favorites_provider.dart';
 import '../../data/models/favorite_store_model.dart';
 import 'store_detail_page.dart';
-
-const _dummyLikedStores = [
-  FavoriteStoreModel(
-    storeId: 1,
-    name: 'Simin Jokbal Bossam Sillim',
-    imageUrl: 'assets/images/food_jokbal.png',
-    rating: 5.0,
-    reviewCount: 2002,
-    categoryName: 'Korean',
-    syncRemote: false,
-  ),
-  FavoriteStoreModel(
-    storeId: 2,
-    name: 'Yupki Ddukbokki Sillim',
-    imageUrl: 'assets/images/food_tteokbokki.png',
-    rating: 4.8,
-    reviewCount: 132,
-    categoryName: 'Street',
-    syncRemote: false,
-  ),
-  FavoriteStoreModel(
-    storeId: 3,
-    name: 'Nene Chicken',
-    imageUrl: 'assets/images/franchise_nene_bg.png',
-    rating: 4.7,
-    reviewCount: 905,
-    categoryName: 'Chicken',
-    syncRemote: false,
-  ),
-];
-
-List<FavoriteStoreModel> _likedStoresWithDummies(
-  List<FavoriteStoreModel> favorites,
-) {
-  final favoriteStoreIds = favorites.map((store) => store.storeId).toSet();
-  return [
-    ...favorites,
-    ..._dummyLikedStores
-        .where((store) => !favoriteStoreIds.contains(store.storeId)),
-  ];
-}
 
 class FavoritesPage extends StatefulWidget {
   const FavoritesPage({super.key});
@@ -135,7 +95,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   if (provider.isLoading) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  final stores = _likedStoresWithDummies(provider.favorites);
+                  final stores = provider.favorites;
 
                   return SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 18),
@@ -158,7 +118,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                             padding: const EdgeInsets.only(bottom: 16),
                             child: _FavoriteStoreCard(
                               store: store,
-                              canRemove: provider.isFavorite(store.storeId),
                             ),
                           ),
                         ),
@@ -181,11 +140,9 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
 class _FavoriteStoreCard extends StatelessWidget {
   final FavoriteStoreModel store;
-  final bool canRemove;
 
   const _FavoriteStoreCard({
     required this.store,
-    required this.canRemove,
   });
 
   @override
@@ -256,23 +213,22 @@ class _FavoriteStoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            GestureDetector(
-              onTap: canRemove
-                  ? () => context
-                      .read<FavoritesProvider>()
-                      .remove(store.storeId, syncRemote: store.syncRemote)
-                  : null,
-              behavior: HitTestBehavior.opaque,
-              child: const SizedBox(
-                width: 32,
-                height: 32,
-                child: Center(
-                  child: Icon(
-                    Icons.favorite,
-                    color: AppColors.accentOrange,
-                    size: 22,
+            IconButton(
+              onPressed: () => context.read<FavoritesProvider>().remove(
+                    store.storeId,
+                    syncRemote: store.syncRemote,
                   ),
-                ),
+              tooltip: 'Remove from Likes',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 32,
+              ),
+              icon: const Icon(
+                Icons.favorite,
+                color: AppColors.accentOrange,
+                size: 22,
               ),
             ),
           ],
@@ -284,7 +240,7 @@ class _FavoriteStoreCard extends StatelessWidget {
 
 Widget _favoriteStoreImage(String imagePath) {
   if (imagePath.startsWith('assets/')) {
-    return Image.asset(imagePath, fit: BoxFit.cover);
+    return AppAssetImage(assetPath: imagePath, fit: BoxFit.cover);
   }
   return Image.network(
     imagePath,

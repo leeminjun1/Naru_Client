@@ -15,7 +15,16 @@ class CartProvider extends ChangeNotifier {
 
   int get total => subtotal + deliveryFee - discount;
 
-  void addItem({
+  bool canAddStore({int? storeId, String? storeName}) {
+    if (_items.isEmpty) return true;
+    return _isSameStore(
+      _items.first,
+      storeId: storeId,
+      storeName: storeName,
+    );
+  }
+
+  bool addItem({
     int? menuId,
     int? storeId,
     String? storeName,
@@ -28,8 +37,13 @@ class CartProvider extends ChangeNotifier {
     required int unitPrice,
     required int quantity,
   }) {
+    if (!canAddStore(storeId: storeId, storeName: storeName)) {
+      return false;
+    }
+
     final existingIndex = _items.indexWhere(
       (item) =>
+          _isSameStore(item, storeId: storeId, storeName: storeName) &&
           item.menuName == menuName &&
           item.selectedSize == selectedSize &&
           item.selectedJokbal == selectedJokbal &&
@@ -55,6 +69,25 @@ class CartProvider extends ChangeNotifier {
       ));
     }
     notifyListeners();
+    return true;
+  }
+
+  bool _isSameStore(
+    CartItem item, {
+    required int? storeId,
+    required String? storeName,
+  }) {
+    if (item.storeId != null && storeId != null) {
+      return item.storeId == storeId;
+    }
+
+    final existingName = item.storeName?.trim().toLowerCase() ?? '';
+    final incomingName = storeName?.trim().toLowerCase() ?? '';
+    if (existingName.isNotEmpty || incomingName.isNotEmpty) {
+      return existingName.isNotEmpty && existingName == incomingName;
+    }
+
+    return item.storeId == null && storeId == null;
   }
 
   void removeItem(String id) {

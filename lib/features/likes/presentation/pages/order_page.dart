@@ -133,9 +133,13 @@ class _OrderPageState extends State<OrderPage> {
     final orderItems = _orderHistoryItems;
     final ordersProvider = context.read<OrdersProvider>();
     final cartProvider = context.read<CartProvider>();
-    int? remoteOrderId;
+    late final int remoteOrderId;
 
     try {
+      final orderService = _orderService;
+      if (orderService == null) {
+        throw StateError('Order service is not ready. Please try again.');
+      }
       final type = _isPickupOrder ? 'PICKUP' : 'DELIVERY';
       final directItems = widget.cartItems != null
           ? orderItems
@@ -164,20 +168,33 @@ class _OrderPageState extends State<OrderPage> {
                 'price': widget.totalPrice,
               }
             ];
-      final remoteOrder = await _orderService?.createOrder(
+      final remoteOrder = await orderService.createOrder(
         type: type,
         totalAmount: _paymentTotal,
         items: directItems,
         couponId: _selectedCoupon?.id,
+        storeName: _displayStoreName,
+        storeImageUrl: _displayStoreImage,
       );
-      remoteOrderId = (remoteOrder?['id'] as num?)?.toInt();
-    } catch (_) {
-      // 실기기 테스트 중 서버 연결/장바구니 상태가 불안정해도 로컬 주문 내역은 유지한다.
-    } finally {
+      final parsedOrderId = (remoteOrder['id'] as num?)?.toInt();
+      if (parsedOrderId == null || parsedOrderId <= 0) {
+        throw const FormatException('The server returned an invalid order.');
+      }
+      remoteOrderId = parsedOrderId;
+    } catch (error) {
       if (mounted) setState(() => _isOrdering = false);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Could not place your order. ${error.toString()}'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
     }
 
     if (!mounted) return;
+    setState(() => _isOrdering = false);
     final recordedOrder = await ordersProvider.recordLocalOrder(
       remoteOrderId: remoteOrderId,
       storeId: widget.storeId,

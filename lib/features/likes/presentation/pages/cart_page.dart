@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/utils/currency_formatter.dart';
+import '../../../../shared/widgets/app_asset_image.dart';
 import '../../../home/presentation/pages/search_page.dart' as home_search;
 import 'order_page.dart';
 
@@ -665,7 +666,7 @@ class _CartPageImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imagePath.startsWith('assets/')) {
-      return Image.asset(imagePath, fit: BoxFit.cover);
+      return AppAssetImage(assetPath: imagePath, fit: BoxFit.cover);
     }
     return Image.network(
       imagePath,
@@ -693,8 +694,12 @@ class _CartPageSizedImage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (imagePath.startsWith('assets/')) {
-      return Image.asset(imagePath,
-          width: width, height: height, fit: BoxFit.cover);
+      return AppAssetImage(
+        assetPath: imagePath,
+        width: width,
+        height: height,
+        fit: BoxFit.cover,
+      );
     }
     return Image.network(
       imagePath,
