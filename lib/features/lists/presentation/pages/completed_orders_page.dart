@@ -167,6 +167,22 @@ class _CompletedOrderRow extends StatelessWidget {
             ),
           ];
 
+    if (!cart.canAddStore(
+      storeId: order.storeId,
+      storeName: order.storeName,
+    )) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Your cart contains items from another store. Clear it first.',
+            style: TextStyle(fontFamily: 'Pretendard', fontSize: 14),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     for (final item in items) {
       final quantity = item.quantity <= 0 ? 1 : item.quantity;
       final unitPrice = item.unitPrice > 0
@@ -190,7 +206,10 @@ class _CompletedOrderRow extends StatelessWidget {
       );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    messenger.hideCurrentSnackBar();
+    final controller = messenger.showSnackBar(
       SnackBar(
         content: Text(
           '${items.length} item${items.length == 1 ? '' : 's'} added to cart',
@@ -199,10 +218,12 @@ class _CompletedOrderRow extends StatelessWidget {
         action: SnackBarAction(
           label: 'View Cart',
           textColor: AppColors.brandOrange,
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CartListPage()),
-          ),
+          onPressed: () {
+            messenger.hideCurrentSnackBar();
+            navigator.push(
+              MaterialPageRoute(builder: (_) => const CartListPage()),
+            );
+          },
         ),
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
@@ -210,6 +231,7 @@ class _CompletedOrderRow extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
+    Future<void>.delayed(const Duration(seconds: 3), controller.close);
   }
 
   @override

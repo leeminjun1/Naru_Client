@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'app.dart';
+import 'core/router/app_router.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
 import 'features/lists/presentation/providers/orders_provider.dart';
@@ -24,7 +25,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => UserProvider()),
       ],
-      child: const NaruApp(),
+      child: NaruApp(
+        initialRoute: authProvider.isAuthenticated
+            ? AppRouter.main
+            : AppRouter.onboarding,
+      ),
     ),
   );
 }

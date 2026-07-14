@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/app_asset_image.dart';
 import '../../../likes/presentation/pages/store_detail_page.dart';
 import '../../data/models/viewed_store_model.dart';
 import '../providers/store_history_provider.dart';
@@ -185,10 +186,10 @@ class _StoreImage extends StatelessWidget {
       child: url == null || url.isEmpty
           ? const _StoreImageFallback()
           : url.startsWith('assets/')
-              ? Image.asset(
-                  url,
+              ? AppAssetImage(
+                  assetPath: url,
                   fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const _StoreImageFallback(),
+                  fallback: const _StoreImageFallback(),
                 )
               : Image.network(
                   url,

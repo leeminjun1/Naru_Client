@@ -12,6 +12,8 @@ class OrderService {
     int? totalAmount,
     List<Map<String, dynamic>>? items,
     int? couponId,
+    String? storeName,
+    String? storeImageUrl,
   }) async {
     final body = <String, dynamic>{'type': type};
     if (deliveryAddress != null) body['deliveryAddress'] = deliveryAddress;
@@ -19,6 +21,8 @@ class OrderService {
     if (totalAmount != null) body['totalAmount'] = totalAmount;
     if (items != null) body['items'] = items;
     if (couponId != null) body['couponId'] = couponId;
+    if (storeName != null) body['storeName'] = storeName;
+    if (storeImageUrl != null) body['storeImageUrl'] = storeImageUrl;
 
     final res = await _api.post('/orders', data: body);
     return res['data'] as Map<String, dynamic>;

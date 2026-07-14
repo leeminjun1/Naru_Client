@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/config/app_config.dart';
 import '../../../../core/constants/app_colors.dart';
+import '../../../../shared/widgets/app_asset_image.dart';
 
 class OrderThumbnail extends StatelessWidget {
   final String? imageUrl;
@@ -36,10 +37,10 @@ class OrderThumbnail extends StatelessWidget {
     if (path == null || path.isEmpty) return _fallback();
 
     if (path.startsWith('assets/')) {
-      return Image.asset(
-        path,
+      return AppAssetImage(
+        assetPath: path,
         fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _fallback(),
+        fallback: _fallback(),
       );
     }
 

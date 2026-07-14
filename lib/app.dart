@@ -3,7 +3,12 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 
 class NaruApp extends StatelessWidget {
-  const NaruApp({super.key});
+  final String initialRoute;
+
+  const NaruApp({
+    super.key,
+    this.initialRoute = AppRouter.onboarding,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +16,7 @@ class NaruApp extends StatelessWidget {
       title: 'Naru',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      initialRoute: AppRouter.onboarding,
+      initialRoute: initialRoute,
       onGenerateRoute: AppRouter.generateRoute,
     );
   }

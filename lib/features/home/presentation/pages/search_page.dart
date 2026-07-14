@@ -616,7 +616,10 @@ class _PickupDefaultContent extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => MenuOptionPage(
                     rank: 'Top ${i + 1}',
-                    menuName: stores[i].name,
+                    storeName: stores[i].name,
+                    storeImagePath: stores[i].imagePath,
+                    menuName: stores[i].menuName,
+                    basePrice: stores[i].basePrice,
                     description: stores[i].tags.join(', '),
                     imagePath: stores[i].imagePath,
                     initialIsPickup: true,
@@ -691,7 +694,10 @@ class _SearchResultsContent extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => MenuOptionPage(
                     rank: 'Top ${i + 1}',
-                    menuName: results[i].name,
+                    storeName: results[i].name,
+                    storeImagePath: results[i].imagePath,
+                    menuName: results[i].menuName,
+                    basePrice: results[i].basePrice,
                     description: results[i].tags.join(', '),
                     imagePath: results[i].imagePath,
                     initialIsPickup: initialIsPickup,
@@ -1055,6 +1061,20 @@ class _SearchResultData {
     required this.imagePath,
     this.keywords = const [],
   });
+
+  String get menuName {
+    final value = label.split('\n').first.trim();
+    if (value.isEmpty || value.toLowerCase() == 'preparing') {
+      return tags.isEmpty ? 'Popular menu' : tags.first;
+    }
+    return value;
+  }
+
+  int? get basePrice {
+    final digits =
+        label.split('\n').skip(1).join().replaceAll(RegExp(r'[^0-9]'), '');
+    return digits.isEmpty ? null : int.tryParse(digits);
+  }
 
   bool matches(String query) {
     final normalizedQuery = _normalize(query);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -44,6 +45,13 @@ class _MenuOptionPageState extends State<MenuOptionPage> {
   int _selectedSize = 0;
   int _selectedDrink = 0;
   int _quantity = 1;
+  Timer? _cartSnackBarTimer;
+
+  @override
+  void dispose() {
+    _cartSnackBarTimer?.cancel();
+    super.dispose();
+  }
 
   static const _sizes = [
     _Option('Small (2–3 servings)', '₩38,000', 38000),
@@ -108,7 +116,7 @@ class _MenuOptionPageState extends State<MenuOptionPage> {
     final unitPrice = priceOptions[selectedSize].price +
         _tertiaryOptions[_selectedDrink].price;
 
-    context.read<CartProvider>().addItem(
+    final added = context.read<CartProvider>().addItem(
           menuId: widget.menuId,
           storeId: widget.storeId,
           storeName: widget.storeName,
@@ -122,7 +130,24 @@ class _MenuOptionPageState extends State<MenuOptionPage> {
           quantity: _quantity,
         );
 
-    ScaffoldMessenger.of(context).showSnackBar(
+    if (!added) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Your cart contains items from another store. Clear it first.',
+            style: TextStyle(fontFamily: 'Pretendard', fontSize: 14),
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context, rootNavigator: true);
+    _cartSnackBarTimer?.cancel();
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
       SnackBar(
         content: const Text(
           'Added to cart',
@@ -131,16 +156,23 @@ class _MenuOptionPageState extends State<MenuOptionPage> {
         action: SnackBarAction(
           label: 'View Cart',
           textColor: AppColors.brandOrange,
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const CartListPage()),
-          ),
+          onPressed: () {
+            _cartSnackBarTimer?.cancel();
+            messenger.hideCurrentSnackBar();
+            navigator.push(
+              MaterialPageRoute(builder: (_) => const CartListPage()),
+            );
+          },
         ),
         duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.textPrimary,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
+    );
+    _cartSnackBarTimer = Timer(
+      const Duration(seconds: 3),
+      messenger.hideCurrentSnackBar,
     );
   }
 
